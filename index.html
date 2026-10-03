@@ -760,8 +760,8 @@ section[hidden]{display:none!important}
 </section>
 
 <div class="foot">
-  <b>갱신 방법</b> — 레이스가 끝나면 Claude에게 "피트월 노트 갱신해줘"라고 말하면 순위·라운드 노트를 업데이트합니다. 이 페이지는 스스로 인터넷에서 결과를 가져오지 않아요.<br>
-  <b>기준</b> — 순위·결과는 15라운드 아제르바이잔 GP(9월 26일)까지 반영.<br><b>자료</b> — 서킷 지도: bacinger/f1-circuits(GeoJSON, MIT). formula1.com, FIA, Wikipedia 2026 시즌 문서, f1-fansite(순위표), 각 레이스 리포트. 페레스·보타스의 7라운드 이후 개별 순위 일부는 확인하지 못해 비워 두었습니다.<br>
+  <span id="foot-upd"><b>갱신 방법</b> — 레이스가 끝나면 Claude에게 "피트월 노트 갱신해줘"라고 말하면 순위·라운드 노트를 업데이트합니다. 이 페이지는 스스로 인터넷에서 결과를 가져오지 않아요.</span><br>
+  <span id="foot-asof"><b>기준</b> — 순위·결과는 15라운드 아제르바이잔 GP(9월 26일)까지 반영.</span><br><b>자료</b> — 서킷 지도: bacinger/f1-circuits(GeoJSON, MIT). formula1.com, FIA, Wikipedia 2026 시즌 문서, f1-fansite(순위표), 각 레이스 리포트. 페레스·보타스의 7라운드 이후 개별 순위 일부는 확인하지 못해 비워 두었습니다.<br>
   <b>국내 중계</b> — 쿠팡플레이 독점(스포츠 패스), 2026년 전 세션 4K 생중계·다시보기.
 </div>
 </main>
@@ -1796,15 +1796,26 @@ function renderChartTab(){
   const r = raceOf(chartRd), D = chartData(chartRd);
   document.getElementById('chart-title').textContent = `R${r.rd} ${r.gp} · ${fmtDate(r.date)}`;
   document.getElementById('chart-evts').innerHTML = (D.evt||[]).map(([l,t],i) => `<li><span class="en2">${i+1}</span><b>${l}랩</b> ${esc(t)}</li>`).join('')
-    || (D.mode === 'snap' ? `<li class="plain">${r.rew.slice(0,3).map(esc).join('</li><li class="plain">')}</li>` : '');
-  const gf = GRIDFIN[chartRd].filter(g => g[2] > 0).map(g => [g[0], g[1] - g[2]]).sort((a,b) => b[1]-a[1]);
-  const up = gf[0], down = gf[gf.length-1], pole = GRIDFIN[chartRd].find(x => x[1]===1), dnf = GRIDFIN[chartRd].filter(x => !x[2]);
-  const row = (id) => GRIDFIN[chartRd].find(x => x[0]===id);
-  document.getElementById('chart-movers').innerHTML = `
-   <div><span>최다 순위 상승</span><b>${esc(drv(up[0]).ko)}</b><span class="mv up">${row(up[0])[1]}위 출발 → ${row(up[0])[2]}위 (+${up[1]})</span></div>
-   <div><span>최다 하락</span><b>${esc(drv(down[0]).ko)}</b><span class="mv dn">${row(down[0])[1]}위 출발 → ${row(down[0])[2]}위 (${down[1]})</span></div>
-   <div><span>폴포지션</span><b>${esc(drv(pole[0]).ko)}</b><span class="mv">${pole[2]?pole[2]+'위로 완주':'리타이어'}</span></div>
-   <div><span>리타이어</span><b>${dnf.length}대</b><span class="mv">${dnf.map(x=>shortName(drv(x[0]))).join(', ')||'없음'}</span></div>`;
+    || (D.mode === 'snap' && r.rew && r.rew.length ? `<li class="plain">${r.rew.slice(0,3).map(esc).join('</li><li class="plain">')}</li>` : '');
+  const G = GRIDFIN[chartRd] || [];
+  const gf = G.filter(g => g[2] > 0 && g[1] > 0).map(g => [g[0], g[1] - g[2]]).sort((a,b) => b[1]-a[1]);
+  const up = gf[0], down = gf.length > 1 ? gf[gf.length-1] : null;
+  const pole = G.find(x => x[1] === 1), dnf = G.filter(x => !x[2]);
+  const row = (id) => G.find(x => x[0] === id);
+  const nameOf = (id) => { const d = drv(id); return d ? d.ko : String(id || '').toUpperCase(); };
+  const cell = (label, m, cls) => {
+    if(!m) return `<div><span>${label}</span><b>—</b><span class="mv">기록 없음</span></div>`;
+    const rw = row(m[0]) || [m[0], 0, 0];
+    const sign = m[1] > 0 ? '+' : '';
+    return `<div><span>${label}</span><b>${esc(nameOf(m[0]))}</b><span class="mv ${cls}">${rw[1]}위 출발 → ${rw[2]}위 (${sign}${m[1]})</span></div>`;
+  };
+  document.getElementById('chart-movers').innerHTML =
+   cell('최다 순위 상승', up && up[1] > 0 ? up : null, 'up') +
+   cell('최다 하락', down && down[1] < 0 ? down : null, 'dn') +
+   (pole
+     ? `<div><span>폴포지션</span><b>${esc(nameOf(pole[0]))}</b><span class="mv">${pole[2]?pole[2]+'위로 완주':'리타이어'}</span></div>`
+     : `<div><span>폴포지션</span><b>—</b><span class="mv">그리드 정보 없음</span></div>`) +
+   `<div><span>리타이어</span><b>${dnf.length}대</b><span class="mv">${dnf.map(x=>shortName(drv(x[0]))||String(x[0]).toUpperCase()).join(', ')||'없음'}</span></div>`;
   renderChart();
 }
 document.addEventListener('click', e => {
@@ -2163,7 +2174,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem('pitwall:'+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem('pitwall:'+k, JSON.stringify(v)); }catch(e){} }
 };
-const shortName = d => d.ko.split(' ').slice(-1)[0];
+const shortName = d => d && d.ko ? d.ko.split(' ').slice(-1)[0] : '';
 const fmtDate = s => { const [y,m,d] = s.split('-'); return `${+m}월 ${+d}일`; };
 function age(b){ if(!/^\d{4}-\d{2}-\d{2}$/.test(b)) return ''; const n = new Date('2026-09-28'), d = new Date(b); let a = n.getFullYear()-d.getFullYear(); if(n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a+'세'; }
 
@@ -2503,11 +2514,21 @@ function applyLive(L){
   if(UPCOMING[0] && UPCOMING[0].raceISO) RACE_KST = UPCOMING[0].raceISO;
 }
 
+function footLive(){
+  const u = $('#foot-upd'), a = $('#foot-asof');
+  if(u) u.innerHTML = '<b>갱신 방법</b> — 결과·순위·일정·랩차트는 매일 자동으로 받아옵니다(GitHub Actions → Jolpica F1 API). ' +
+    '관전 포인트·리뷰·비화 같은 글은 Claude에게 부탁해 채워 넣으면 됩니다.';
+  if(a && LIVE.at){
+    const k = kst(LIVE.at);
+    a.innerHTML = `<b>기준</b> — ${LIVE.lastRound || ''}라운드까지 반영 · 마지막 자동 갱신 ${k ? `${k.y}-${String(k.m).padStart(2,'0')}-${String(k.dd).padStart(2,'0')} ${k.hm}` : ''} (한국시각)`;
+  }
+}
+
 function rerenderAll(){
   $('#asof').textContent = ASOF;
   renderNext(); renderGuide(); renderRaces(); renderDrivers(); renderStand();
   renderCal(); renderChartTab(); renderUpnext(); renderCalendar(); renderStyleGroups();
-  liveChip();
+  liveChip(); footLive();
 }
 
 (async function pullLive(){
@@ -2517,7 +2538,7 @@ function rerenderAll(){
     if(!r.ok) throw new Error('HTTP ' + r.status);
     const L = await r.json();
     applyLive(L);
-    LIVE.on = true; LIVE.at = L.generated;
+    LIVE.on = true; LIVE.at = L.generated; LIVE.lastRound = L.lastRound;
     rerenderAll();
     const tab = store.get('tab', 'cal'); setTab(tab);
   }catch(e){
