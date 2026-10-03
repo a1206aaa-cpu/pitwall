@@ -1,0 +1,32 @@
+{
+  "name": "피트월 노트",
+  "short_name": "피트월",
+  "description": "F1 관전 노트 — 캘린더·관전 포인트·룰북·서킷·순위",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1014",
+  "theme_color": "#12151B",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
