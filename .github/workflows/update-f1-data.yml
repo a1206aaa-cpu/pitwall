@@ -2,10 +2,13 @@ name: F1 데이터 자동 갱신
 
 on:
   schedule:
-    # 매일 04:17 UTC = 한국시각 13:17. 경기 다음 날 점심쯤 반영된다.
-    - cron: '17 4 * * *'
-  workflow_dispatch:        # 저장소 Actions 탭에서 수동 실행도 가능
-  push:                     # 처음 올렸을 때 한 번 바로 돌도록
+    # 2시간마다 깨어나지만, 실제로 받아올지는 스크립트가 일정을 보고 판단한다.
+    #   레이스 주간(결승 -4일 ~ +2일) → 매번 받아옴
+    #   그 외                        → 48시간에 한 번만
+    #   내용이 안 바뀌면 커밋도 안 함
+    - cron: '13 */2 * * *'
+  workflow_dispatch:        # Actions 탭에서 수동 실행 — 항상 강제로 받아옴
+  push:                     # 수집기나 설정을 바꿔 올렸을 때 바로 한 번
     paths:
       - 'tools/fetch_f1.py'
       - '.github/workflows/update-f1-data.yml'
@@ -28,7 +31,14 @@ jobs:
           python-version: '3.12'
 
       - name: 데이터 수집
-        run: python tools/fetch_f1.py --out data/live.json
+        env:
+          EV: ${{ github.event_name }}
+        run: |
+          if [ "$EV" = "schedule" ]; then
+            python tools/fetch_f1.py --out data/live.json
+          else
+            python tools/fetch_f1.py --out data/live.json --force
+          fi
 
       - name: 바뀐 게 있으면 커밋
         run: |
@@ -38,6 +48,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "변경 없음 — 커밋 생략"
           else
-            git commit -m "data: F1 자동 갱신 $(date -u +%Y-%m-%d)"
+            git commit -m "data: F1 자동 갱신 $(date -u '+%Y-%m-%d %H:%M')"
             git push
           fi
