@@ -567,6 +567,38 @@ table.rnd .dnf{color:var(--red);font-size:10.5px;font-weight:700;letter-spacing:
 .livechip.ok::before{background:var(--green)}
 .livechip.off{color:var(--ink-3)}
 @media(max-width:480px){.livechip{margin-left:0;margin-top:4px}}
+/* 예선 결과 블록 */
+.qbox{border:1px solid var(--line);border-radius:6px;background:var(--card-2);margin:12px 0 14px;overflow:hidden}
+.qhd{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:10px 14px;background:var(--sunk);border-bottom:1px solid var(--line)}
+.qtag{font-size:10.5px;letter-spacing:.1em;padding:2px 7px;border-radius:3px;background:var(--purple);color:#fff}
+.qhd b{font-size:15px}
+.qsub{font-size:12px;color:var(--ink-2)}
+.qcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;padding:13px 14px}
+@media(max-width:720px){.qcols{grid-template-columns:1fr;gap:16px}}
+.qcols h4{margin:0 0 7px;font-size:11.5px;letter-spacing:.06em;color:var(--ink-3);font-weight:600}
+ol.q3{list-style:none;margin:0;padding:0}
+ol.q3 li{display:flex;align-items:center;gap:8px;padding:3.5px 0;border-bottom:1px solid var(--line-2);font-size:13px}
+ol.q3 li:last-child{border-bottom:0}
+.q3 .qp{width:17px;text-align:right;font-family:'Saira Condensed',sans-serif;font-weight:700;color:var(--ink-3)}
+.q3 i,.ggrid i{width:3px;height:13px;border-radius:2px;flex:0 0 auto}
+.q3 b{flex:1;font-weight:500}
+.q3 .mono{font-size:12px;color:var(--ink-2)}
+ul.qout{list-style:none;margin:9px 0 0;padding:9px 0 0;border-top:1px solid var(--line-2)}
+ul.qout li{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-bottom:5px}
+ul.qout b{color:var(--ink);font-weight:600;margin-right:4px}
+ul.qpen{list-style:none;margin:0;padding:0}
+ul.qpen li{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;font-size:12.5px;line-height:1.5;padding:5px 0;border-bottom:1px solid var(--line-2);color:var(--ink-2)}
+ul.qpen li:last-child{border-bottom:0}
+ul.qpen b{color:var(--ink);font-weight:600}
+.pz{font-size:10.5px;padding:1px 6px;border-radius:3px;background:rgba(201,42,42,.12);color:var(--red);white-space:nowrap}
+.ggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px}
+@media(max-width:420px){.ggrid{grid-template-columns:1fr}}
+.gcell{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:2.5px 0}
+.gp2{width:18px;text-align:right;font-family:'Saira Condensed',sans-serif;font-weight:700;color:var(--ink-3)}
+.gcell b{font-weight:500}
+.gcell em{font-style:normal;font-size:10.5px;font-weight:700}
+.gcell em.up{color:var(--green)}
+.gcell em.dn{color:var(--red)}
 section[hidden]{display:none!important}
 </style>
 <header>
@@ -1934,15 +1966,27 @@ function renderCars(){
 }
 /* 남은 라운드 — 한국시각 세션 시각(모두 UTC 공식 일정에서 +9시간 환산)과 관전 포인트 */
 const UPNEXT = [
- {rd:16, gp:'바레인 GP (말레이시아 개최)', place:'세팡', tag:'8년 만의 복귀',
+ {rd:16, gp:'바레인 GP (말레이시아 개최)', place:'세팡', tag:'예선 종료 · 결승 D-DAY',
   ses:[['연습 1','금 10/2','21:30'],['연습 2','토 10/3','01:00'],['연습 3','토 10/3','13:30'],['예선','토 10/3','17:00'],['결승','일 10/4','16:00']],
-  hi:'한국에서 보기 좋은 시간대예요. 토요일 저녁 예선, 일요일 오후 결승.',
+  hi:'예선 끝났습니다 — 베르스타펜이 시즌 첫 폴. 결승은 일요일 오후 4시(한국).',
+  quali:{pole:'ver', margin:'0.298초', t:'1:35.130',
+   q3:[['ver','1:35.130'],['ham','1:35.428'],['had','1:35.558'],['ant','1:35.631'],['lec','1:35.666'],
+       ['nor','1:35.757'],['pia','1:35.762'],['rus','1:35.871'],['gas','1:37.210'],['bor','1:37.673']],
+   out:[['Q2 탈락','로슨 — 린드블라드가 뒤에서 토(tow)까지 붙여줬는데 보르톨레토에게 0.209초 뒤져 11위'],
+        ['Q1 탈락','휠켄베르크 — 0.087초 차로 컷. 아우디 두 대의 희비가 갈렸습니다']]},
+  grid:[['ver',1,1],['ham',2,2],['ant',3,4],['lec',4,5],['nor',5,6],['pia',6,7],['rus',7,8],['had',8,3],
+        ['gas',9,9],['bor',10,10],['law',11,11],['alo',12,12],['sai',13,13],['str',14,14],['hul',15,17],
+        ['bea',16,18],['oco',17,19],['alb',18,20],['bot',19,21],['per',20,22],['col',21,15],['lin',22,16]],
+  pen:[['had','5그리드 강등','파워유닛 신품 부품 교체 — 3위 → 8위 출발'],
+       ['col','15그리드 강등','ICE 교체 10 + 아제르바이잔 다중 충돌 유발 5 — 15위 → 21위'],
+       ['lin','최후미','파워유닛 전 부품 신품 교체 — 16위 → 22위']],
   pts:[
-   ['아무도 모르는 트랙','2017년 이후 처음 열립니다. 현역 드라이버 대부분이 지금 세대 F1 차로 세팡을 달려본 적이 없어요. 금요일 연습에서 팀별 세팅이 크게 엇갈릴 가능성이 높고, 그게 그대로 예선 순위로 드러납니다.'],
-   ['비가 오면 다 뒤집힌다','열대 스콜이 오후에 쏟아지는 게 이 동네 기본값입니다. 결승이 현지 15시 시작이라 정확히 그 시간대예요. 하늘이 어두워지면 인터미디엇 타이어로 언제 갈아타는지가 승부처가 됩니다.'],
-   ['타이어가 가장 힘든 트랙','노면 온도 50도에 길게 감기는 코너가 많아 역대 세팡은 마모가 극심했습니다. 원스톱이냐 투스톱이냐로 팀이 갈릴 거예요. 중계에서 타이어 색깔이 팀마다 다르면 그때부터가 진짜입니다.'],
-   ['메르세데스의 새 플로어','상반기 내내 업그레이드를 아꼈던 메르세데스가 여기에 새 플로어를 예고했습니다. 맥라렌·페라리의 추격을 끊을 수 있을지, 금요일 롱런 페이스부터 비교해 보세요.'],
-   ['러셀의 2연승 가능성','바쿠 우승으로 안토넬리와 66점 차. 팀메이트 싸움이 남은 8경기의 메인 스토리입니다.']]},
+   ['베르스타펜의 시즌 첫 폴','0.298초 차. 올해 내내 폴이 없던 레드불이 시즌 막판에 살아났습니다. 다만 뒤에 페라리 2대·메르세데스 2대가 깔려 있고 팀메이트 하자르는 패널티로 8위까지 밀렸어요. 1번 차가 혼자 네 대를 상대하는 그림입니다.'],
+   ['메르세데스가 처음으로 맨 앞을 내줬다','챔피언십 선두 안토넬리가 예선 4위, 러셀은 8위. 노면 46도까지 올라가는 세팡에서 W17이 타이어를 못 살리는지 롱런에서 드러납니다. 초반 10랩 페이스를 눈여겨보세요.'],
+   ['1코너가 전부','긴 메인 스트레이트 끝의 넓고 느린 우회전. 세팡은 역대 1랩 사고가 잦았고, 이번엔 콜라핀토·린드블라드가 최후미에서 빠른 차로 올라옵니다. 초반 세이프티카 확률이 평소보다 높아요.'],
+   ['타이어 관리가 승부','피렐리가 C2·C3·C4 중간 세 컴파운드를 가져왔습니다. 열·습도·거친 노면 조합이라 역대 세팡은 마모가 극심했어요. 원스톱이냐 투스톱이냐로 팀이 갈릴 겁니다.'],
+   ['비 30%','현지 예보는 최고 31도, 체감 35도, 강수 확률 30%로 주말 중 가장 낮습니다. 그래도 세팡의 오후 스콜은 전통이고 결승이 정확히 그 시간대예요. 떨어지면 판이 통째로 뒤집힙니다.'],
+   ['챔피언십 셈','안토넬리 302, 러셀 236으로 66점 차. 남은 8라운드에서 아직 확정은 멀지만, 오늘 안토넬리(3위 출발)가 러셀(7위 출발)보다 앞서 끝내면 격차가 굳어지는 쪽으로 갑니다.']]},
  {rd:17, gp:'싱가포르 GP', place:'마리나 베이', tag:'올해 마지막 스프린트',
   ses:[['연습 1','금 10/9','17:30'],['스프린트 예선','금 10/9','21:30'],['스프린트','토 10/10','18:00'],['예선','토 10/10','22:00'],['결승','일 10/11','21:00']],
   hi:'금·토·일 모두 저녁 시간대. 올 시즌 한국에서 보기 가장 편한 주말입니다.',
@@ -2001,11 +2045,45 @@ const UPNEXT = [
    ['시즌 마지막 이야기들','아직 확정 안 된 챔피언, 내년 라인업 발표, 은퇴·이적 소식이 이 주말에 몰립니다.'],
    ['다음 날 테스트','결승 다음 날 영 드라이버 테스트가 열려 내년 신인들이 F1 차를 처음 탑니다.']]}
 ];
+
+/* 예선이 끝난 라운드 — 결과·최종 그리드·패널티 */
+function qualiBlock(u){
+  const q = u.quali || {};
+  const nm = id => { const d = drv(id); return d ? shortName(d) : String(id).toUpperCase(); };
+  const tm = id => { const d = drv(id); const t = d && team(d.t); return t ? t.c : 'var(--ink-3)'; };
+
+  const q3 = (q.q3||[]).map(([id,t],i) =>
+    `<li><span class="qp">${i+1}</span><i style="background:${tm(id)}"></i><b>${esc(nm(id))}</b><span class="mono">${esc(t)}</span></li>`).join('');
+
+  const pen = (u.pen||[]).map(([id,head,txt]) =>
+    `<li><b>${esc(nm(id))}</b><span class="pz">${esc(head)}</span><span>${esc(txt)}</span></li>`).join('');
+
+  const grid = (u.grid||[]).map(([id,g,qp]) => {
+    const mv = qp - g;
+    const tag = mv > 0 ? `<em class="up">▲${mv}</em>` : mv < 0 ? `<em class="dn">▼${-mv}</em>` : '';
+    return `<div class="gcell"><span class="gp2">${g}</span><i style="background:${tm(id)}"></i><b>${esc(nm(id))}</b>${tag}</div>`;
+  }).join('');
+
+  const out = (q.out||[]).map(([h,t]) => `<li><b>${esc(h)}</b> ${esc(t)}</li>`).join('');
+
+  return `<div class="qbox">
+    <div class="qhd"><span class="qtag">예선 결과</span>
+      <b>폴 ${esc(nm(q.pole))}</b>
+      <span class="qsub mono">${esc(q.t||'')}${q.margin ? ' · 2위와 '+esc(q.margin) : ''}</span></div>
+    <div class="qcols">
+      <div><h4>Q3 톱10</h4><ol class="q3">${q3}</ol>${out ? `<ul class="qout">${out}</ul>` : ''}</div>
+      <div><h4>패널티로 바뀐 것</h4><ul class="qpen">${pen || '<li>없음</li>'}</ul>
+        <h4 style="margin-top:12px">최종 출발 그리드</h4><div class="ggrid">${grid}</div></div>
+    </div>
+  </div>`;
+}
+
 function renderUpnext(){
   const el = document.getElementById('upnext');
   if(!el) return;
   el.innerHTML = UPNEXT.map((u,i) => `<article class="unx${i===0?' first':''}">
     <div class="unx-hd"><span class="unx-rd">R${u.rd}</span><div><h3>${esc(u.gp)}</h3><span class="unx-pl">${esc(u.place)}</span></div>${u.tag ? `<span class="bdg${i===0?' sp':''}">${esc(u.tag)}</span>` : ''}</div>
+    ${u.quali ? qualiBlock(u) : ''}
     <div class="unx-ses">${(u.ses||[]).map(([n,d,t]) => `<div class="${n==='결승'?'race':n==='예선'||n==='스프린트 예선'?'q':''}"><span class="sn2">${esc(n)}</span><span class="sd2">${esc(d)}</span><b class="mono">${esc(t)}</b></div>`).join('')}</div>
     ${u.hi ? `<p class="unx-hi">${esc(u.hi)}</p>` : ''}
     ${(u.pts&&u.pts.length) ? `<ul class="unx-pts">${u.pts.map(([h,p]) => `<li><b>${esc(h)}</b><span>${esc(p)}</span></li>`).join('')}</ul>` : '<p class="unx-hi" style="color:var(--ink-3)">관전 포인트는 아직 적어두지 않았습니다.</p>'}
@@ -2368,6 +2446,14 @@ function kst(isoZ){
   };
 }
 
+/* '1:35.130' 두 개의 차이를 '0.298초'로 */
+function gapOf(a, b){
+  const sec = t => { const m = String(t).match(/^(?:(\d+):)?(\d+)\.(\d+)$/); 
+    return m ? (+(m[1]||0))*60 + (+m[2]) + (+('0.'+m[3])) : NaN; };
+  const d = sec(b) - sec(a);
+  return isFinite(d) && d > 0 ? d.toFixed(3) + '초' : '';
+}
+
 const SES_KO = {fp1:'연습 1', fp2:'연습 2', fp3:'연습 3', sq:'스프린트 예선',
                 ss:'스프린트 예선', sprint:'스프린트', qual:'예선'};
 const SES_ORDER = ['fp1','fp2','sq','ss','sprint','fp3','qual'];
@@ -2381,10 +2467,12 @@ function liveChip(){
     el.parentNode.insertBefore(tag, el.nextSibling);
   }
   if(LIVE.on){
-    const k = kst(LIVE.at);
+    const k = kst(LIVE.checked || LIVE.at), g = kst(LIVE.at);
     tag.className = 'livechip ok';
     tag.textContent = `자동 갱신 ${k ? `${k.m}/${String(k.dd).padStart(2,'0')} ${k.hm}` : ''}`;
-    tag.title = '마지막으로 F1 데이터를 받아온 시각 (한국시각)';
+    tag.title = `마지막 확인 ${k ? k.m+'/'+k.dd+' '+k.hm : '-'}`
+      + (g && LIVE.checked && LIVE.checked !== LIVE.at ? ` · 데이터가 마지막으로 바뀐 건 ${g.m}/${g.dd} ${g.hm}` : '')
+      + ' (한국시각)';
   } else {
     tag.className = 'livechip off';
     tag.textContent = '저장된 데이터';
@@ -2500,10 +2588,32 @@ function applyLive(L){
     });
     if(rk) ses.push(['결승', `${rk.dow} ${rk.m}/${rk.dd}`, rk.hm]);
 
-    UPNEXT.push({
+    const u = {
       rd:s.rd, gp: meta.gp || s.name, place: meta.place || s.locality,
       tag: base.tag, ses, hi: base.hi, pts: base.pts
-    });
+    };
+    /* 예선이 끝났으면 결과·최종 그리드를 자동으로 붙인다 */
+    const qa = (L.qualifying || {})[String(s.rd)];
+    if(qa && qa.rows && qa.rows.length){
+      const rows = qa.rows.slice().sort((a,b) => a[1] - b[1]);
+      const best = r => r[4] || r[3] || r[2] || '';
+      if(base.quali && base.quali.pole === rows[0][0]){
+        u.quali = base.quali; u.grid = base.grid; u.pen = base.pen;   // 손으로 적어둔 쪽이 더 자세하면 유지
+      } else {
+        const p1 = best(rows[0]), p2 = best(rows[1] || []);
+        u.quali = {
+          pole: rows[0][0], t: p1,
+          margin: (p1 && p2) ? gapOf(p1, p2) : '',
+          q3: rows.filter(r => r[4]).slice(0,10).map(r => [r[0], r[4]])
+        };
+        if(!u.quali.q3.length) u.quali.q3 = rows.slice(0,10).map(r => [r[0], best(r)]);
+        u.grid = rows.map(r => [r[0], r[1], r[1]]);   // 패널티 반영 전 — 결승 뒤 GRIDFIN이 덮어씀
+        u.pen = [];
+        u.quali.auto = true;
+      }
+      if(!u.tag) u.tag = '예선 종료';
+    }
+    UPNEXT.push(u);
   });
 
   /* 6) 헤더 문구 */
@@ -2519,8 +2629,10 @@ function footLive(){
   if(u) u.innerHTML = '<b>갱신 방법</b> — 결과·순위·일정·랩차트는 매일 자동으로 받아옵니다(GitHub Actions → Jolpica F1 API). ' +
     '관전 포인트·리뷰·비화 같은 글은 Claude에게 부탁해 채워 넣으면 됩니다.';
   if(a && LIVE.at){
-    const k = kst(LIVE.at);
-    a.innerHTML = `<b>기준</b> — ${LIVE.lastRound || ''}라운드까지 반영 · 마지막 자동 갱신 ${k ? `${k.y}-${String(k.m).padStart(2,'0')}-${String(k.dd).padStart(2,'0')} ${k.hm}` : ''} (한국시각)`;
+    const f = t => { const k = kst(t); return k ? `${k.y}-${String(k.m).padStart(2,'0')}-${String(k.dd).padStart(2,'0')} ${k.hm}` : ''; };
+    const same = !LIVE.checked || LIVE.checked === LIVE.at;
+    a.innerHTML = `<b>기준</b> — ${LIVE.lastRound || ''}라운드까지 반영 · 데이터 갱신 ${f(LIVE.at)}`
+      + (same ? '' : ` · 마지막 확인 ${f(LIVE.checked)}`) + ' (한국시각)';
   }
 }
 
@@ -2538,7 +2650,7 @@ function rerenderAll(){
     if(!r.ok) throw new Error('HTTP ' + r.status);
     const L = await r.json();
     applyLive(L);
-    LIVE.on = true; LIVE.at = L.generated; LIVE.lastRound = L.lastRound;
+    LIVE.on = true; LIVE.at = L.generated; LIVE.checked = L.checked || L.generated; LIVE.lastRound = L.lastRound;
     rerenderAll();
     const tab = store.get('tab', 'cal'); setTab(tab);
   }catch(e){
