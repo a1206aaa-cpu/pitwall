@@ -2,20 +2,16 @@
 """
 피트월 노트 — F1 데이터 수집기
 Jolpica(구 Ergast) 공개 API에서 일정/결과/순위/랩차트를 받아 data/live.json 으로 저장.
-GitHub Actions에서 하루 한 번 실행되고, 바뀐 게 있을 때만 커밋된다.
-
-브라우저가 아니라 서버(GitHub)에서 돌기 때문에 CORS·User-Agent 제약이 없고,
-방문자가 많아져도 API에 부하를 주지 않는다.
+브라우저가 아니라 서버(GitHub)에서 돌기 때문에 CORS·User-Agent 제약이 없다.
 """
 import argparse, hashlib, json, os, sys, time, urllib.request, urllib.error
 from datetime import datetime, timezone
 
 BASE = "https://api.jolpi.ca/ergast/f1"
 UA = "pitwall-note/1.0 (personal F1 companion; github pages)"
-LIMIT = 100          # Jolpica 최대값
-SLEEP = 0.35         # 요청 간격 (rate limit 여유)
+LIMIT = 100
+SLEEP = 0.35
 
-# API driverId -> 앱 내부 3글자 id (API의 code 필드가 없거나 다를 때만 필요)
 JID = {
     "russell": "rus", "max_verstappen": "ver", "antonelli": "ant", "hamilton": "ham",
     "leclerc": "lec", "norris": "nor", "piastri": "pia", "hadjar": "had",
@@ -24,7 +20,6 @@ JID = {
     "hulkenberg": "hul", "albon": "alb", "sainz": "sai", "alonso": "alo",
     "stroll": "str", "perez": "per", "bottas": "bot",
 }
-# API constructorId -> 앱 내부 팀 id
 TID = {
     "mercedes": "mer", "ferrari": "fer", "mclaren": "mcl", "red_bull": "rbr",
     "rb": "rb", "alphatauri": "rb", "racing_bulls": "rb", "alpine": "alp",
@@ -44,7 +39,6 @@ def _hours_since(iso):
 
 
 def race_week(schedule, before=4, after=2):
-    """결승 기준 -before일 ~ +after일 사이면 레이스 주간."""
     now = datetime.now(timezone.utc)
     for r in schedule or []:
         iso = r.get("race")
@@ -61,7 +55,6 @@ def race_week(schedule, before=4, after=2):
 
 
 def payload_key(d):
-    """`checked`/`generated` 같은 시각 필드를 뺀 알맹이만 — 바뀌었는지 비교용."""
     keep = {k: d.get(k) for k in
             ("season", "lastRound", "schedule", "standings", "drivers",
              "results", "podium", "fastest", "laps", "qualifying")}
@@ -71,7 +64,6 @@ def payload_key(d):
 
 
 def _near(race_iso, days=4):
-    """결승이 앞뒤 N일 이내인가 — 주말 중인 라운드만 예선을 확인한다."""
     if not race_iso:
         return False
     try:
@@ -104,7 +96,6 @@ def get(path, **params):
 
 
 def dcode(d):
-    """API 드라이버 객체 -> 내부 3글자 id"""
     did = d.get("driverId", "")
     if did in JID:
         return JID[did]
@@ -120,7 +111,6 @@ def tcode(c):
 
 
 def iso(date, t):
-    """'2026-03-08' + '04:00:00Z' -> '2026-03-08T04:00:00Z'"""
     if not date:
         return None
     return f"{date}T{t}" if t else f"{date}T00:00:00Z"
@@ -200,7 +190,6 @@ def fetch_results(season, rd):
 
 
 def fetch_qualifying(season, rd):
-    """예선 결과. {rows:[[code, pos, q1, q2, q3], ...]}"""
     md = get(f"{season}/{rd}/qualifying")
     races = md["RaceTable"]["Races"]
     if not races:
@@ -213,7 +202,6 @@ def fetch_qualifying(season, rd):
 
 
 def fetch_laps(season, rd, idmap=None):
-    """랩별 포지션. {laps:N, d:{code:[pos,...]}}"""
     idmap = idmap or {}
     per, total, offset = {}, None, 0
     while True:
@@ -231,7 +219,7 @@ def fetch_laps(season, rd, idmap=None):
         offset += LIMIT
         if offset >= int(md.get("total", 0)):
             break
-        if offset > 6000:                      # 안전장치
+        if offset > 6000:
             break
     if not per or not total:
         return None
@@ -241,7 +229,7 @@ def fetch_laps(season, rd, idmap=None):
         for n in range(1, total + 1):
             v = m.get(n)
             if v is None:
-                v = last                        # 피트/리타이어 직전 값 유지
+                v = last
             else:
                 last = v
             seq.append(v or 0)
@@ -253,14 +241,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--season", type=int, default=datetime.now(timezone.utc).year)
     ap.add_argument("--out", default="data/live.json")
-    ap.add_argument("--max-new-laps", type=int, default=3,
-                    help="한 번 실행에서 새로 받아올 랩차트 라운드 수 (API 부담 방지)")
-    ap.add_argument("--force", action="store_true",
-                    help="주기 판정을 건너뛰고 무조건 받아온다 (수동 실행용)")
-    ap.add_argument("--quiet-hours", type=float, default=48,
-                    help="레이스 주간이 아닐 때 최소 간격(시간)")
-    ap.add_argument("--heartbeat-days", type=float, default=7,
-                    help="데이터가 안 바뀌어도 이 주기로는 한 번 커밋 (예약 실행이 꺼지는 걸 막음)")
+    ap.add_argument("--max-new-laps", type=int, default=3)
+    ap.add_argument("--force", action="store_true")
+    ap.add_argument("--quiet-hours", type=float, default=48)
+    ap.add_argument("--heartbeat-days", type=float, default=7)
     a = ap.parse_args()
 
     prev = {}
@@ -271,7 +255,6 @@ def main():
             prev = {}
     same_season = prev.get("season") == a.season
 
-    # ── 지금 받아올 때인가? ─────────────────────────────────
     rw = race_week(prev.get("schedule")) if same_season else None
     since = _hours_since(prev.get("checked") or prev.get("generated"))
     if a.force:
@@ -281,8 +264,7 @@ def main():
     elif since >= a.quiet_hours:
         why = f"평시 — 마지막 확인 {since:.0f}시간 전"
     else:
-        print(f"skip: 레이스 주간 아님 · 마지막 확인 {since:.1f}시간 전 "
-              f"(기준 {a.quiet_hours:.0f}시간) — API 호출 없음")
+        print(f"skip: 레이스 주간 아님 · 마지막 확인 {since:.1f}시간 전 (기준 {a.quiet_hours:.0f}시간) — API 호출 없음")
         return 0
     print(f"run: {why}")
 
@@ -309,7 +291,6 @@ def main():
             out["standings"] = prev.get("standings", {"d": [], "t": []})
             out["drivers"] = prev.get("drivers", {})
 
-    # 결과: 전체 라운드를 매번 확인 (레이스당 1요청 — 가볍다)
     prev_res = prev.get("results", {}) if same_season else {}
     prev_laps = prev.get("laps", {}) if same_season else {}
     out["laps"] = dict(prev_laps)
@@ -325,7 +306,6 @@ def main():
             out["errors"].append(f"results r{rd}: {e}")
             res = None
         if res is None:
-            # 결승 전이라도 예선은 끝나 있을 수 있다 — 주말이 임박한 라운드만 확인
             if _near(r.get("race")) and rd not in out["qualifying"]:
                 try:
                     q = fetch_qualifying(a.season, r["rd"])
@@ -371,7 +351,7 @@ def main():
     stale = _hours_since(prev.get("checked") or prev.get("generated")) >= a.heartbeat_days * 24
 
     if changed:
-        out["generated"] = now_iso            # 데이터가 실제로 바뀐 시각
+        out["generated"] = now_iso
     else:
         out["generated"] = prev.get("generated", now_iso)
     out["key"] = key
@@ -384,11 +364,9 @@ def main():
     with open(a.out, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
 
-    print(f"{'changed' if changed else 'heartbeat'} · season={a.season} rounds={len(out['schedule'])} results={len(out['results'])} "
-          f"laps={len(out['laps'])} qual={len(out['qualifying'])} last={last_round} errors={len(out['errors'])}")
+    print(f"{'changed' if changed else 'heartbeat'} · season={a.season} rounds={len(out['schedule'])} results={len(out['results'])} laps={len(out['laps'])} qual={len(out['qualifying'])} last={last_round} errors={len(out['errors'])}")
     for e in out["errors"]:
         print("  !", e, file=sys.stderr)
-    # 에러가 있어도 파일은 쓰고 정상 종료 — 사이트가 빈 화면이 되는 걸 막는다
     return 0
 
 
