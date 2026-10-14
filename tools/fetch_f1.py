@@ -38,20 +38,35 @@ def _hours_since(iso):
     return (datetime.now(timezone.utc) - t).total_seconds() / 3600.0
 
 
-def race_week(schedule, before=4, after=2):
-    now = datetime.now(timezone.utc)
-    for r in schedule or []:
-        iso = r.get("race")
-        if not iso:
-            continue
+def _parse(iso_s):
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"):
         try:
-            t = datetime.strptime(iso[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            return datetime.strptime(iso_s if fmt[-1] == "Z" else iso_s[:10], fmt).replace(tzinfo=timezone.utc)
         except Exception:
-            continue
-        d = (t - now).total_seconds() / 86400.0
-        if -after <= d <= before:
-            return r.get("rd")
+            pass
     return None
+
+
+def recent_session(schedule, lo=3.0, hi=36.0):
+    """최근에 끝난 세션이 있으면 (라운드, 종류, 몇 시간 전).
+       세션 시작 후 lo시간~hi시간 사이만 본다 — 경기가 끝난 다음에 받아오기 위함."""
+    now = datetime.now(timezone.utc)
+    best = None
+    for r in schedule or []:
+        ses = r.get("sessions") or {}
+        cands = [("결승", r.get("race")), ("예선", ses.get("qual")),
+                 ("스프린트", ses.get("sprint")),
+                 ("스프린트 예선", ses.get("sq") or ses.get("ss"))]
+        for ko, iso_s in cands:
+            if not iso_s:
+                continue
+            t = _parse(iso_s)
+            if not t:
+                continue
+            age = (now - t).total_seconds() / 3600.0
+            if lo <= age <= hi and (best is None or age < best[2]):
+                best = (r.get("rd"), ko, age)
+    return best
 
 
 def payload_key(d):
@@ -243,7 +258,7 @@ def main():
     ap.add_argument("--out", default="data/live.json")
     ap.add_argument("--max-new-laps", type=int, default=3)
     ap.add_argument("--force", action="store_true")
-    ap.add_argument("--quiet-hours", type=float, default=48)
+    ap.add_argument("--quiet-hours", type=float, default=72)
     ap.add_argument("--heartbeat-days", type=float, default=7)
     a = ap.parse_args()
 
@@ -255,16 +270,16 @@ def main():
             prev = {}
     same_season = prev.get("season") == a.season
 
-    rw = race_week(prev.get("schedule")) if same_season else None
+    rs = recent_session(prev.get("schedule")) if same_season else None
     since = _hours_since(prev.get("checked") or prev.get("generated"))
     if a.force:
         why = "수동/강제 실행"
-    elif rw:
-        why = f"R{rw} 레이스 주간"
+    elif rs:
+        why = f"R{rs[0]} {rs[1]} 끝난 지 {rs[2]:.0f}시간"
     elif since >= a.quiet_hours:
         why = f"평시 — 마지막 확인 {since:.0f}시간 전"
     else:
-        print(f"skip: 레이스 주간 아님 · 마지막 확인 {since:.1f}시간 전 (기준 {a.quiet_hours:.0f}시간) — API 호출 없음")
+        print(f"skip: 최근 끝난 세션 없음 · 마지막 확인 {since:.1f}시간 전 (기준 {a.quiet_hours:.0f}시간) — API 호출 없음")
         return 0
     print(f"run: {why}")
 
