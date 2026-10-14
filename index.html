@@ -2078,8 +2078,19 @@ function renderUpnext(){
   </article>`).join('');
 }
 /* 달력 보기 — 지난 라운드는 현지 결승일, 남은 라운드는 한국 시각 기준 세션 날짜 */
-let calMonth = 9, calMode = 'grid';
 const MONTHS = [3,4,5,6,7,8,9,10,11,12];
+let CAL_YEAR = 2026;
+/* 달력은 오늘 달로 연다 — 시즌 밖이면 다음 경기가 있는 달로 */
+function initCalMonth(){
+  const clamp = m => Math.min(Math.max(m, MONTHS[0]), MONTHS[MONTHS.length-1]);
+  const n = new Date();
+  if(n.getFullYear() === CAL_YEAR) return clamp(n.getMonth()+1);
+  if(n.getFullYear() < CAL_YEAR) return MONTHS[0];
+  const u = (typeof UPCOMING !== 'undefined' && UPCOMING[0] && UPCOMING[0].date)
+    ? +UPCOMING[0].date.split('-')[1] : MONTHS[MONTHS.length-1];
+  return clamp(u);
+}
+let calMonth = initCalMonth(), calMode = 'grid';
 /* 좁은 화면용 두세 글자 라벨 */
 function shortTag(rd, name){
   if(name === '결승') return 'R' + rd;
@@ -2116,15 +2127,15 @@ function renderCalendar(){
   }
   document.querySelectorAll('[data-calmode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.calmode === calMode));
   const ev = calEvents();
-  const first = new Date(2026, calMonth-1, 1), startDow = first.getDay();
-  const days = new Date(2026, calMonth, 0).getDate();
+  const first = new Date(CAL_YEAR, calMonth-1, 1), startDow = first.getDay();
+  const days = new Date(CAL_YEAR, calMonth, 0).getDate();
   const today = new Date();
-  const isThisMonth = today.getFullYear() === 2026 && today.getMonth()+1 === calMonth;
+  const isThisMonth = today.getFullYear() === CAL_YEAR && today.getMonth()+1 === calMonth;
   const cells = [];
   for(let i = 0; i < startDow; i++) cells.push('<div class="cd out"></div>');
   for(let d = 1; d <= days; d++){
     const list = ev[calMonth+'-'+d] || [];
-    const dow = new Date(2026, calMonth-1, d).getDay();
+    const dow = new Date(CAL_YEAR, calMonth-1, d).getDay();
     const isToday = isThisMonth && today.getDate() === d;
     cells.push(`<div class="cd${list.length?' has':''}${isToday?' today':''}">
       <span class="cdn${dow===0?' sun':dow===6?' sat':''}">${d}</span>
@@ -2136,7 +2147,7 @@ function renderCalendar(){
   }
   while(cells.length % 7) cells.push('<div class="cd out"></div>');
   document.getElementById('cal-cells').innerHTML = cells.join('');
-  document.getElementById('cal-month').textContent = `2026년 ${calMonth}월`;
+  document.getElementById('cal-month').textContent = `${CAL_YEAR}년 ${calMonth}월`;
   document.getElementById('cal-prev').disabled = calMonth <= MONTHS[0];
   document.getElementById('cal-next').disabled = calMonth >= MONTHS[MONTHS.length-1];
   const inMonth = [];
@@ -2615,7 +2626,11 @@ function applyLive(L){
     UPNEXT.push(u);
   });
 
-  /* 6) 헤더 문구 */
+  /* 6) 달력 — 시즌 연도와 여는 달을 데이터에 맞춘다 */
+  if(L.season && typeof CAL_YEAR !== 'undefined') CAL_YEAR = L.season;
+  if(typeof initCalMonth === 'function') calMonth = initCalMonth();
+
+  /* 7) 헤더 문구 */
   if(last > 0){
     const lastMeta = RDMETA[last] || {};
     ASOF = `${(kst(L.generated)||{}).y || ''}-${String((kst(L.generated)||{}).m||'').padStart(2,'0')}-${String((kst(L.generated)||{}).dd||'').padStart(2,'0')} · ${last}라운드${lastMeta.gp ? `(${lastMeta.gp})` : ''}까지 반영`;
