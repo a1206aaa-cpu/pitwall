@@ -502,7 +502,6 @@ table.rnd .dnf{color:var(--red);font-size:10.5px;font-weight:700;letter-spacing:
 .cal-modes{margin-left:auto;display:flex;gap:4px}
 .cal-sum{font-size:12.5px;color:var(--ink-2);margin-bottom:12px;line-height:1.6}
 .cal-scroll{overflow-x:auto}
-@media(max-width:620px){.cal-dows,.cal-cells{min-width:520px}}
 .cal-dows{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--line);background:var(--card-2)}
 .cal-dows span{padding:7px 8px;font-size:11.5px;font-weight:600;color:var(--ink-3);text-align:center}
 .cal-dows .sun{color:var(--red)}
@@ -520,7 +519,19 @@ table.rnd .dnf{color:var(--red);font-size:10.5px;font-weight:700;letter-spacing:
 .cev{display:block;width:100%;text-align:left;border-radius:3px;padding:3px 5px;line-height:1.25;border:1px solid transparent}
 .cev .cet{display:block;font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cev .ces{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.85}
-@media(max-width:600px){.cev .ces{display:none}.cev .cet{font-size:9.5px}}
+.cvs{display:none}
+@media(max-width:620px){
+ /* 좁은 화면 — 가로 스크롤 없이 한 화면에 들어오게 */
+ .cal-scroll{overflow-x:visible}
+ .cal-dows span{padding:5px 2px;font-size:10.5px}
+ .cd{min-height:54px;padding:2px 2px 4px;gap:2px}
+ .cdn{font-size:10px;line-height:1.1}
+ .cev{padding:2px 1px;border-radius:2px}
+ .cev .cet,.cev .ces{display:none}
+ .cev .cvs{display:block;font-size:9.5px;font-weight:700;text-align:center;letter-spacing:-.02em;white-space:nowrap}
+ .cal-legend{padding:8px 10px;gap:8px;font-size:10.5px}
+ .cal-legend .lgn{margin-left:0;flex-basis:100%}
+}
 .cev.race{background:var(--purple);color:#fff}
 .cev.quali{background:var(--purple-soft);color:var(--purple);border-color:var(--purple)}
 .cev.sprint{background:#E3A008;color:#1d1600}
@@ -800,8 +811,8 @@ section[hidden]{display:none!important}
 
 <dialog id="dlg" aria-labelledby="dlg-title"><div id="dlg-body"></div></dialog>
 <script>
-let ASOF = '2026-09-28 · 15라운드(아제르바이잔 GP)까지 반영';
-let RACE_KST = '2026-10-04T16:00:00+09:00';
+let ASOF = '2026-10-14 · 17라운드(싱가포르 GP)까지 반영';
+let RACE_KST = '2026-10-26T05:00:00+09:00';
 
 const TEAMS = [
  {id:'mer', name:'메르세데스', en:'Mercedes-AMG Petronas', car:'W17', pu:'메르세데스', c:'#00A19C'},
@@ -1000,9 +1011,9 @@ const DRIVERS = [
 ];
 
 const STAND_D = [
- ['ant',302],['rus',236],['ham',199],['nor',186],['lec',179],['ver',163],['pia',120],['had',86],['law',59],['gas',41],['lin',37],['col',27],['bea',20],['bor',10],['hul',7],['oco',7],['sai',7],['alb',5],['alo',3],['tsu',1],['str',0],['bot',0],['per',0]
+ ['ant',340],['rus',238],['ham',229],['ver',221],['lec',215],['nor',201],['pia',138],['had',97],['law',75],['gas',41],['lin',38],['col',27],['bea',23],['hul',13],['bor',10],['oco',7],['alo',7],['sai',7],['alb',5],['tsu',1],['str',0],['bot',0],['per',0]
 ];
-const STAND_T = [['mer',538],['fer',378],['mcl',306],['rbr',263],['rb',83],['alp',68],['haa',27],['aud',17],['wil',12],['ast',3],['cad',0]];
+const STAND_T = [['mer',578],['fer',444],['mcl',339],['rbr',332],['rb',100],['alp',68],['haa',30],['aud',23],['wil',12],['ast',7],['cad',0]];
 
 const RACES = [
  {rd:1, gp:'호주 GP', place:'앨버트 파크 · 멜버른', date:'2026-03-08',
@@ -1066,10 +1077,17 @@ const RACES = [
   pre:['추모일을 피해 토요일 결승으로 하루 당겨진 주말.','아자르가 손목 부상 3경기 결장 뒤 복귀, 로슨은 레이싱 불스로 복귀, 쓰노다는 다시 리저브로.','윌리엄스가 예고했던 대형 업그레이드 투입.'],
   pod:['rus','ver','had'],
   rew:['예선 — 러셀 폴. 챔피언십 선두 안토넬리는 크래시로 16번 그리드.','20랩 전후 알본이 6코너에서 크래시 → 세이프티카. 러셀은 선두를 지킨 채 피트, 레드불은 두 대를 연달아 넣는 더블 스택 성공.','25랩 전후 1코너에서 콜라핀토가 브레이크 잠기며 가슬리·노리스와 함께 리타이어 → 두 번째 세이프티카. 챔피언십 4위 노리스에겐 치명타.','44랩 전후 피아스트리가 1코너에서 미끄러져 3위권에서 15위로. 안토넬리는 16위 출발에서 5위까지 회복.','마지막 랩 — 페르스타펜이 러셀 뒤에 바짝 붙었지만 0.196초 차로 실패. 복귀전의 아자르가 3위로 포디움.']}
+,
+ {rd:16, gp:'바레인 GP (말레이시아 개최)', place:'세팡', date:'2026-10-04',
+  pre:['중동 정세로 취소된 바레인 GP를 세팡이 대신 받았습니다. 2017년 이후 9년 만의 F1 복귀전.','베르스타펜이 시즌 첫 폴. 레드불이 자체 파워유닛으로 시즌 후반 살아났습니다.','하자르 5그리드 강등(PU 교체), 콜라핀토 15그리드, 린드블라드 최후미 — 예선 뒤 패널티 3건.'],
+  pod:['ver','ant','ham'],
+  rew:['출발 직전 폭우. 40분 대기 후 세이프티카 뒤에서 탐색 주행을 돌던 중 베르스타펜·해밀턴이 동시에 파워 이상을 호소했고, 해밀턴이 백스트레이트에 멈춰 서면서 스타트가 중단됐습니다. FIA가 "전례 없는" 엔진 소프트웨어 결함이라며 수정 패치를 배포했고, 결승은 예정보다 3시간 반 늦게 끝났습니다.','타이어 도박이 갈렸습니다. 22대 중 13대가 아직 젖은 노면에 슬릭으로 출발 — 페라리·맥라렌 모두 포함. 베르스타펜과 메르세데스 두 대만 인터미디엇을 골랐고, 그게 전부였습니다.','스타트에서 메르세데스 두 대가 베르스타펜을 넘었지만 6랩에 러셀을, 9랩 보타스 스핀으로 나온 세이프티카 재시작에서 안토넬리를 다시 제쳤습니다.','5랩 남기고 3위를 달리던 러셀이 파워유닛 문제로 멈췄습니다. 그 두 번째 세이프티카에서 노리스는 1코너를 벗어나 9위까지 밀렸고요.','해밀턴은 프런트로 출발했다가 슬릭 선택 실패로 최후미까지 떨어졌지만, 세이프티카로 좁혀진 뒤 하자르를 제치고 3위로 올라왔습니다. 페라리의 5경기 만의 포디움.','베르스타펜의 시즌 첫 승이자 통산 72승, 레드불이 자체 PU로 거둔 첫 승리입니다. 안토넬리는 2위로 러셀과의 격차를 84점까지 벌렸습니다.']},
+ {rd:17, gp:'싱가포르 GP', place:'마리나 베이', date:'2026-10-11',
+  pre:['올 시즌 마지막 스프린트 주말. 베르스타펜이 스프린트와 결승을 모두 가져갔습니다.','베르스타펜 2연속 폴, 2위 르클레르와 0.054초. 러셀은 엔진 패널티로 19번 그리드.','마리나 베이는 베르스타펜이 유일하게 우승이 없던 현역 서킷이었습니다.'],
+  pod:['ver','lec','ant'],
+  rew:['베르스타펜이 통산 250번째 그랑프리에서 폴투윈. 1코너에서 르클레르를 막아낸 뒤로는 흔들림이 없었고, 무전이 고장 나 팀이 피트보드로 신호를 보내는 상황에서도 33랩에 소프트→미디엄으로 갈아타며 선두를 지켰습니다. 마리나 베이 첫 승이자 통산 73승.','풀 세이프티카 없이 VSC만 두 번. 7랩께 보르톨레토의 아우디가 기어박스 이상으로 멈추며 불이 붙었고, 37랩 뒤에는 스트롤이 15번 코너에 섰습니다.','해밀턴의 전략이 어긋났습니다. 19랩에 혼자 일찍 소프트로 들어갔고 페라리가 2스톱을 저울질하다 그대로 두는 바람에, 46랩에 르클레르에게 추월당하고 노리스에게도 내주며 6위로 끝났습니다. 본인이 무전으로 "두 번째 스톱을 안 한 건 내 책임"이라고 인정했습니다.','피아스트리는 서서히 바람이 빠지는 타이어로 42랩에 두 번째 피트를 하고도 막판 해밀턴을 제치고 5위.','19번에서 출발한 러셀이 48랩에 가슬리를 넘어 9위까지 복구했고, 피트레인 출발한 하자르가 10위로 포인트를 챙겼습니다.','안토넬리는 트랙 리밋 경고와 브레이크·열 문제를 안고도 3위로 들어와 챔피언십 리드를 더 벌렸습니다.']}
 ];
 const UPCOMING = [
- {rd:16, gp:'바레인 GP (말레이시아 개최)', place:'세팡', date:'2026-10-04', kst:['예선 토 17:00','결승 일 16:00'], note:'세팡 8년 만의 복귀 · 한국 16:00'},
- {rd:17, gp:'싱가포르 GP', place:'마리나 베이', date:'2026-10-11', kst:['스프린트 토 18:00','예선 토 22:00','결승 일 21:00'], sprint:true, note:'마지막 스프린트'},
  {rd:18, gp:'미국 GP', place:'COTA · 오스틴', date:'2026-10-25', kst:['예선 일 06:00','결승 월 05:00']},
  {rd:19, gp:'멕시코시티 GP', place:'에르마노스 로드리게스', date:'2026-11-01', kst:['예선 일 06:00','결승 월 05:00']},
  {rd:20, gp:'상파울루 GP', place:'인테를라고스', date:'2026-11-08', kst:['예선 일 03:00','결승 월 02:00']},
@@ -1966,36 +1984,6 @@ function renderCars(){
 }
 /* 남은 라운드 — 한국시각 세션 시각(모두 UTC 공식 일정에서 +9시간 환산)과 관전 포인트 */
 const UPNEXT = [
- {rd:16, gp:'바레인 GP (말레이시아 개최)', place:'세팡', tag:'예선 종료 · 결승 D-DAY',
-  ses:[['연습 1','금 10/2','21:30'],['연습 2','토 10/3','01:00'],['연습 3','토 10/3','13:30'],['예선','토 10/3','17:00'],['결승','일 10/4','16:00']],
-  hi:'예선 끝났습니다 — 베르스타펜이 시즌 첫 폴. 결승은 일요일 오후 4시(한국).',
-  quali:{pole:'ver', margin:'0.298초', t:'1:35.130',
-   q3:[['ver','1:35.130'],['ham','1:35.428'],['had','1:35.558'],['ant','1:35.631'],['lec','1:35.666'],
-       ['nor','1:35.757'],['pia','1:35.762'],['rus','1:35.871'],['gas','1:37.210'],['bor','1:37.673']],
-   out:[['Q2 탈락','로슨 — 린드블라드가 뒤에서 토(tow)까지 붙여줬는데 보르톨레토에게 0.209초 뒤져 11위'],
-        ['Q1 탈락','휠켄베르크 — 0.087초 차로 컷. 아우디 두 대의 희비가 갈렸습니다']]},
-  grid:[['ver',1,1],['ham',2,2],['ant',3,4],['lec',4,5],['nor',5,6],['pia',6,7],['rus',7,8],['had',8,3],
-        ['gas',9,9],['bor',10,10],['law',11,11],['alo',12,12],['sai',13,13],['str',14,14],['hul',15,17],
-        ['bea',16,18],['oco',17,19],['alb',18,20],['bot',19,21],['per',20,22],['col',21,15],['lin',22,16]],
-  pen:[['had','5그리드 강등','파워유닛 신품 부품 교체 — 3위 → 8위 출발'],
-       ['col','15그리드 강등','ICE 교체 10 + 아제르바이잔 다중 충돌 유발 5 — 15위 → 21위'],
-       ['lin','최후미','파워유닛 전 부품 신품 교체 — 16위 → 22위']],
-  pts:[
-   ['베르스타펜의 시즌 첫 폴','0.298초 차. 올해 내내 폴이 없던 레드불이 시즌 막판에 살아났습니다. 다만 뒤에 페라리 2대·메르세데스 2대가 깔려 있고 팀메이트 하자르는 패널티로 8위까지 밀렸어요. 1번 차가 혼자 네 대를 상대하는 그림입니다.'],
-   ['메르세데스가 처음으로 맨 앞을 내줬다','챔피언십 선두 안토넬리가 예선 4위, 러셀은 8위. 노면 46도까지 올라가는 세팡에서 W17이 타이어를 못 살리는지 롱런에서 드러납니다. 초반 10랩 페이스를 눈여겨보세요.'],
-   ['1코너가 전부','긴 메인 스트레이트 끝의 넓고 느린 우회전. 세팡은 역대 1랩 사고가 잦았고, 이번엔 콜라핀토·린드블라드가 최후미에서 빠른 차로 올라옵니다. 초반 세이프티카 확률이 평소보다 높아요.'],
-   ['타이어 관리가 승부','피렐리가 C2·C3·C4 중간 세 컴파운드를 가져왔습니다. 열·습도·거친 노면 조합이라 역대 세팡은 마모가 극심했어요. 원스톱이냐 투스톱이냐로 팀이 갈릴 겁니다.'],
-   ['비 30%','현지 예보는 최고 31도, 체감 35도, 강수 확률 30%로 주말 중 가장 낮습니다. 그래도 세팡의 오후 스콜은 전통이고 결승이 정확히 그 시간대예요. 떨어지면 판이 통째로 뒤집힙니다.'],
-   ['챔피언십 셈','안토넬리 302, 러셀 236으로 66점 차. 남은 8라운드에서 아직 확정은 멀지만, 오늘 안토넬리(3위 출발)가 러셀(7위 출발)보다 앞서 끝내면 격차가 굳어지는 쪽으로 갑니다.']]},
- {rd:17, gp:'싱가포르 GP', place:'마리나 베이', tag:'올해 마지막 스프린트',
-  ses:[['연습 1','금 10/9','17:30'],['스프린트 예선','금 10/9','21:30'],['스프린트','토 10/10','18:00'],['예선','토 10/10','22:00'],['결승','일 10/11','21:00']],
-  hi:'금·토·일 모두 저녁 시간대. 올 시즌 한국에서 보기 가장 편한 주말입니다.',
-  pts:[
-   ['토요일에도 점수가 걸린다','올 시즌 여섯 번째이자 마지막 스프린트. 100km짜리 짧은 레이스에 1위 8점부터 8위 1점까지 걸려 있어 챔피언십에 실제로 영향을 줍니다.'],
-   ['세이프티카는 거의 확정','벽이 코앞이라 매년 SC가 나옵니다. 언제 나오느냐에 따라 공짜 피트스톱을 누가 챙기는지가 결과를 만들어요. SC 배너가 뜨는 순간 화면 아래 피트 진입 표시를 보세요.'],
-   ['가장 가혹한 체력전','습도 80%에 기온 30도, 코너 19개. 드라이버 체중이 3kg 가까이 빠지는 레이스라 후반 실수가 늘어납니다.'],
-   ['맥라렌 검증대','바쿠에 가져온 추가 패키지가 저속 코너에서 통하는지 확인되는 곳입니다. 노리스는 챔피언십 4위로 밀렸지만 여기는 그가 두 번 우승한 트랙이에요.'],
-   ['예선이 곧 결과','추월이 어려워서 토요일 밤 예선을 보면 일요일 그림이 거의 보입니다. 예선만 봐도 남는 주말.']]},
  {rd:18, gp:'미국 GP', place:'COTA · 오스틴', tag:'3연전 시작',
   ses:[['연습 1','토 10/24','03:30'],['연습 2','토 10/24','07:00'],['연습 3','일 10/25','03:30'],['예선','일 10/25','06:00'],['결승','월 10/26','05:00']],
   hi:'여기부터 아메리카 3연전이라 한국은 새벽입니다. 예선(일요일 아침 6시)만 챙겨 보고 결승은 재방을 권해요.',
@@ -2092,18 +2080,28 @@ function renderUpnext(){
 /* 달력 보기 — 지난 라운드는 현지 결승일, 남은 라운드는 한국 시각 기준 세션 날짜 */
 let calMonth = 9, calMode = 'grid';
 const MONTHS = [3,4,5,6,7,8,9,10,11,12];
+/* 좁은 화면용 두세 글자 라벨 */
+function shortTag(rd, name){
+  if(name === '결승') return 'R' + rd;
+  if(name === '스프린트 예선') return 'SQ';
+  if(name === '스프린트') return 'S';
+  if(name === '예선') return 'Q';
+  const m = String(name).match(/(\d)/);
+  return m ? 'P' + m[1] : name.slice(0,2);
+}
+
 function calEvents(){
   const ev = {};
   const push = (mm, dd, o) => { const k = mm+'-'+dd; (ev[k] = ev[k] || []).push(o); };
   RACES.forEach(r => {
     const [y,m,d] = r.date.split('-').map(Number);
-    push(m, d, {rd:r.rd, type:'결승', done:true, label:`R${r.rd} ${r.gp.replace(' GP','')}`, sub:`우승 ${shortName(drv(r.pod[0]))}`, cls:'done'});
+    push(m, d, {rd:r.rd, type:'결승', done:true, label:`R${r.rd} ${r.gp.replace(' GP','')}`, sub:`우승 ${shortName(drv(r.pod[0]))}`, cls:'done', short:`R${r.rd}`});
   });
   UPNEXT.forEach(u => {
     u.ses.forEach(([name, day, time]) => {
       const mm = +day.split(' ')[1].split('/')[0], dd = +day.split(' ')[1].split('/')[1];
       const cls = name === '결승' ? 'race' : name.includes('예선') ? 'quali' : name === '스프린트' ? 'sprint' : 'fp';
-      push(mm, dd, {rd:u.rd, type:name, label:`R${u.rd} ${name}`, sub:time, time, cls, gp:u.gp});
+      push(mm, dd, {rd:u.rd, type:name, label:`R${u.rd} ${name}`, sub:time, time, cls, gp:u.gp, short:shortTag(u.rd, name)});
     });
   });
   return ev;
@@ -2131,8 +2129,9 @@ function renderCalendar(){
     cells.push(`<div class="cd${list.length?' has':''}${isToday?' today':''}">
       <span class="cdn${dow===0?' sun':dow===6?' sat':''}">${d}</span>
       ${list.map(e => `<button class="cev ${e.cls}" data-goround="${e.rd}" title="${esc(e.gp || e.label)}">
-        <span class="cet">${esc(e.type === '결승' && e.done ? e.label : e.label)}</span>
-        <span class="ces">${esc(e.sub || '')}</span></button>`).join('')}
+        <span class="cet">${esc(e.label)}</span>
+        <span class="ces">${esc(e.sub || '')}</span>
+        <span class="cvs">${esc(e.short || e.label)}</span></button>`).join('')}
     </div>`);
   }
   while(cells.length % 7) cells.push('<div class="cd out"></div>');
