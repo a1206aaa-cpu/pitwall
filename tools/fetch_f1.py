@@ -72,7 +72,7 @@ def recent_session(schedule, lo=3.0, hi=36.0):
 def payload_key(d):
     keep = {k: d.get(k) for k in
             ("season", "lastRound", "schedule", "standings", "drivers",
-             "results", "podium", "fastest", "laps", "qualifying")}
+             "results", "podium", "fastest", "laps", "qualifying", "careers")}
     return hashlib.sha256(
         json.dumps(keep, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
     ).hexdigest()
@@ -216,6 +216,27 @@ def fetch_qualifying(season, rd):
     return {"rows": rows} if rows else None
 
 
+def fetch_career(season, driver_id):
+    """드라이버가 뛴 팀과 연도. [[constructorId, 시작, 끝], ...] (최신 순)"""
+    md = get(f"drivers/{driver_id}/constructors")
+    cons = [c["constructorId"] for c in md.get("ConstructorTable", {}).get("Constructors", [])]
+    spans = []
+    for cid in cons:
+        md2 = get(f"drivers/{driver_id}/constructors/{cid}/seasons", limit=LIMIT)
+        yrs = sorted(int(s["season"]) for s in md2.get("SeasonTable", {}).get("Seasons", []))
+        if not yrs:
+            continue
+        start = prev_y = yrs[0]
+        for y in yrs[1:]:
+            if y != prev_y + 1:
+                spans.append([cid, start, prev_y])
+                start = y
+            prev_y = y
+        spans.append([cid, start, prev_y])
+    spans.sort(key=lambda s: (-s[2], -s[1]))
+    return spans
+
+
 def fetch_laps(season, rd, idmap=None):
     idmap = idmap or {}
     per, total, offset = {}, None, 0
@@ -259,6 +280,7 @@ def main():
     ap.add_argument("--max-new-laps", type=int, default=3)
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--quiet-hours", type=float, default=72)
+    ap.add_argument("--max-new-careers", type=int, default=25)
     ap.add_argument("--heartbeat-days", type=float, default=7)
     a = ap.parse_args()
 
@@ -289,6 +311,7 @@ def main():
         "schedule": [], "standings": {"d": [], "t": []},
         "drivers": {}, "results": {}, "podium": {}, "fastest": {}, "laps": {},
         "qualifying": {},
+        "careers": {},
         "errors": [],
     }
 
@@ -312,6 +335,7 @@ def main():
 
     prev_qual = prev.get("qualifying", {}) if same_season else {}
     out["qualifying"] = dict(prev_qual)
+    out["careers"] = dict(prev.get("careers", {}))
     new_lap_rounds, last_round, idmaps = [], 0, {}
     for r in out["schedule"]:
         rd = str(r["rd"])
@@ -359,6 +383,24 @@ def main():
         except Exception as e:
             out["errors"].append(f"laps r{rd}: {e}")
 
+    # ── 팀 이력: 아직 없거나 올해가 빠진 드라이버만 ──
+    jid_rev = {v: k for k, v in JID.items()}
+    todo = []
+    for code in out.get("drivers", {}):
+        cur = out["careers"].get(code)
+        if not cur or not cur.get("t") or max((s[2] for s in cur["t"]), default=0) < a.season:
+            todo.append(code)
+    for code in todo[:a.max_new_careers]:
+        did = jid_rev.get(code)
+        if not did:
+            continue
+        try:
+            spans = fetch_career(a.season, did)
+            if spans:
+                out["careers"][code] = {"t": spans}
+        except Exception as e:
+            out["errors"].append(f"career {code}: {e}")
+
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     out["checked"] = now_iso
     key = payload_key(out)
@@ -379,7 +421,7 @@ def main():
     with open(a.out, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
 
-    print(f"{'changed' if changed else 'heartbeat'} · season={a.season} rounds={len(out['schedule'])} results={len(out['results'])} laps={len(out['laps'])} qual={len(out['qualifying'])} last={last_round} errors={len(out['errors'])}")
+    print(f"{'changed' if changed else 'heartbeat'} · season={a.season} rounds={len(out['schedule'])} results={len(out['results'])} laps={len(out['laps'])} qual={len(out['qualifying'])} career={len(out['careers'])} last={last_round} errors={len(out['errors'])}")
     for e in out["errors"]:
         print("  !", e, file=sys.stderr)
     return 0
