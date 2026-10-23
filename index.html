@@ -610,6 +610,37 @@ ul.qpen b{color:var(--ink);font-weight:600}
 .gcell em{font-style:normal;font-size:10.5px;font-weight:700}
 .gcell em.up{color:var(--green)}
 .gcell em.dn{color:var(--red)}
+/* 팀 이력 · 이적 · 계약 */
+ul.career{list-style:none;margin:0 0 6px;padding:0}
+ul.career li{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--line-2);font-size:13.5px}
+ul.career li:last-child{border-bottom:0}
+ul.career i{width:3px;height:16px;border-radius:2px;flex:0 0 auto}
+ul.career b{font-weight:600;flex:1;min-width:0}
+ul.career .cy{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+ul.career .cn{font-size:11px;color:var(--ink-3);min-width:44px;text-align:right;white-space:nowrap}
+.movel{margin:8px 0 0;font-size:13px;color:var(--ink-2);display:flex;align-items:baseline;gap:7px;line-height:1.5}
+.movel b{color:var(--ink);font-weight:600}
+.mv-ar{color:var(--purple);font-weight:700}
+.ctr{margin:9px 0 0;font-size:12.5px;line-height:1.55;color:var(--ink-2);
+  padding:8px 11px;border-radius:5px;background:var(--card-2);border-left:3px solid var(--line)}
+.ctr .ct-b{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.02em;
+  padding:1px 7px;border-radius:3px;margin-right:7px;vertical-align:1px}
+.ctr.ok{border-left-color:var(--green)}
+.ctr.ok .ct-b{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.ctr.likely{border-left-color:var(--purple)}
+.ctr.likely .ct-b{background:var(--purple-soft);color:var(--purple)}
+.ctr.open{border-left-color:var(--yellow)}
+.ctr.open .ct-b{background:rgba(199,145,0,.14);color:var(--yellow)}
+/* 드라이버 탭 상단 이적 현황 */
+.mkt{border:1px solid var(--line);border-radius:6px;background:var(--card-2);padding:13px 15px;margin:0 0 16px}
+.mkt-hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:7px}
+.mkt-hd b{font-size:15px}
+.mkt-hd .mono{font-size:11.5px;color:var(--ink-3)}
+.mkt-open{margin:0 0 10px;font-size:13px;color:var(--ink-2);line-height:1.6}
+ul.mkt-ls{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+ul.mkt-ls li{padding-left:11px;border-left:2px solid var(--purple)}
+ul.mkt-ls b{display:block;font-size:13px;margin-bottom:2px}
+ul.mkt-ls span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.6}
 section[hidden]{display:none!important}
 </style>
 <header>
@@ -717,6 +748,7 @@ section[hidden]{display:none!important}
 </section>
 
 <section id="drivers" hidden>
+  <div id="market"></div>
   <div class="sec-head">
     <h2>11팀 22명, 그리고 대타 한 명</h2>
     <p class="sub">이름을 누르면 프로필, 비화, 그리고 주행 스타일과 승부 타입이 열립니다. 예선형인지 결승형인지, 타이어를 아끼는 쪽인지 밀어붙이는 쪽인지가 정리돼 있어요.</p>
@@ -2254,6 +2286,113 @@ function renderStyleGroups(){
     <div class="sg-names">${ids.map(id => { const d = drv(id), t = team(d.t); return `<button class="sg-n" data-d="${id}"><span class="sw2b" style="background:${t.c}"></span>${esc(shortName(d))}</button>`; }).join('')}</div>
     <p>${esc(note)}</p></div>`).join('');
 }
+/* ── 커리어(팀 이력) · 계약/이적 현황 ─────────────────────────
+   팀 이력은 data/live.json 의 careers 를 그대로 쓴다 (수집기가 API에서 받아옴).
+   계약 현황은 보도 기준 수동 정리 — 2026-10-21. */
+
+const CAREERS = {};
+
+const CON_KO = {
+  mercedes:'메르세데스', ferrari:'페라리', mclaren:'맥라렌', red_bull:'레드불',
+  rb:'레이싱 불스', alphatauri:'알파타우리', toro_rosso:'토로 로소', racing_bulls:'레이싱 불스',
+  alpine:'알핀', renault:'르노', lotus_f1:'로터스', haas:'하스',
+  audi:'아우디', sauber:'자우버', kick_sauber:'킥 자우버', alfa:'알파로메오', alfa_romeo:'알파로메오',
+  williams:'윙리엄스', aston_martin:'애스턴 마틴', racing_point:'레이싱 포인트',
+  force_india:'포스 인디아', cadillac:'캐딕락', minardi:'미나르디',
+  manor:'마노', marussia:'마루시아', caterham:'케이터햄', virgin:'버진', hrt:'HRT',
+  toyota:'토요타', bmw_sauber:'BMW 자우버', brawn:'브런', honda:'혼다', jordan:'조던',
+  super_aguri:'슈퍼 아구리', spyker:'스파이커', midland:'미들랜드', benetton:'베네통'
+};
+const conKo = id => CON_KO[id] || String(id || '').replace(/_/g, ' ').toUpperCase();
+const CON_C = {mercedes:'#00A19C', ferrari:'#DC0000', mclaren:'#FF8000', red_bull:'#3671C6',
+  rb:'#6C98FF', alphatauri:'#2B4562', toro_rosso:'#2B4562', racing_bulls:'#6C98FF',
+  alpine:'#FF87BC', renault:'#FFF500', lotus_f1:'#FFB800', haas:'#9CA3AB',
+  audi:'#A3142A', sauber:'#52E252', kick_sauber:'#52E252', alfa:'#900000', alfa_romeo:'#900000',
+  williams:'#1868DB', aston_martin:'#229971', racing_point:'#F596C8', force_india:'#F596C8',
+  cadillac:'#B8962E', minardi:'#000000', manor:'#E8E8E8', marussia:'#6E0000'};
+const conC = id => CON_C[id] || 'var(--ink-3)';
+
+const CONTRACT = {
+  nor:['ok','2030년까지 (연장 옵션 포함)'], pia:['ok','복수 연도 계약'],
+  ver:['ok','2030년까지 — 이 계약으로 메르세데스행 소문이 정리됐습니다'],
+  had:['ok','2027년까지'],
+  ham:['ok','2027년까지'], lec:['ok','복수 연도 계약'],
+  sai:['ok','복수 연도 계약'], alb:['ok','2027년까지'],
+  alo:['ok','복수 연도 계약'], str:['ok','복수 연도 계약'],
+  hul:['ok','복수 연도 계약'], bor:['ok','복수 연도 계약'],
+  gas:['ok','2028년까지'], col:['ok','2027년까지'],
+  bot:['ok','2027년까지'], per:['ok','2027년까지'],
+  ant:['likely','메르세데스 잔류 유력 — 페르스타펜이 레드불과 재계약하면서 자리 정리'],
+  rus:['likely','메르세데스 잔류 유력 — 같은 이유로 자리 지킴'],
+  law:['likely','레이싱 불스 잔류 유력 (공식 발표 전)'],
+  lin:['likely','레이싱 불스 잔류 유력 (공식 발표 전)'],
+  bea:['likely','하스 잔류 유력 — 연장 계약 마무리가 조건'],
+  oco:['open','2027 거취 불투명 — 하스가 라파엘 카마라를 영입하면서 한 자리가 줄었습니다'],
+  tsu:['open','2027 시트 미정']
+};
+const ST_KO = {ok:'확정', likely:'유력', open:'미정', new:'신규'};
+
+const MARKET_2027 = {
+  asof:'2026-10-21 보도 기준',
+  open:'남은 자리는 세 개 — 레이싱 불스 두 자리, 하스 한 자리입니다. 셋 다 현 드라이버 잔류가 유력하지만 공식 발표는 아직입니다.',
+  news:[
+   ['하스 — 라파엘 카마라 영입','21세 브라질 드라이버, 페라리 아카데미 소속. F3 챔피언이자 올해 F2 선두로 2027년부터 복수 연도 계약을 맺었습니다. 베어먼과 함께 장차 해밀턴의 페라리 자리를 노리는 후보로 거론됩니다.'],
+   ['페르스타펜 2030년까지 잔류','레드불과 장기 재계약. 올 시즌 내내 돌던 메르세데스행 소문이 여기서 끊겼고, 덕분에 러셀·안토넬리의 자리도 정리됐습니다.'],
+   ['오콘이 가장 불안하다','하스에 카마라가 들어오고 베어먼 연장이 유력해지면서, 현재 그리드에서 자리가 가장 불투명한 쪽은 오콘입니다.']
+  ]
+};
+
+function careerBlock(id){
+  const c = CAREERS[id];
+  if(!c || !c.length) return '<p class="hint2">팀 이력은 자동 수집 중입니다 — 다음 갱신에 채워집니다.</p>';
+  const rows = c.map(([cid, a, b]) => {
+    const yrs = a === b ? `${a}` : `${a}–${b}`;
+    const n = b - a + 1;
+    return `<li><i style="background:${conC(cid)}"></i><b>${esc(conKo(cid))}</b>
+      <span class="cy mono">${yrs}</span><span class="cn">${n}시즌</span></li>`;
+  }).join('');
+  const teams = c.length, first = Math.min(...c.map(s => s[1])), last = Math.max(...c.map(s => s[2]));
+  return `<ul class="career">${rows}</ul>
+    <p class="hint2">${first}년 데뷔 · ${last - first + 1}시즌째 · 팀 ${teams}곤</p>`;
+}
+
+const SAME_TEAM = [
+  ['sauber','kick_sauber','alfa','alfa_romeo','audi','bmw_sauber'],
+  ['toro_rosso','alphatauri','rb','racing_bulls'],
+  ['force_india','racing_point','aston_martin','spyker','midland','jordan'],
+  ['renault','alpine','lotus_f1','benetton'],
+  ['brawn','mercedes','honda'],
+  ['marussia','manor','virgin']
+];
+const sameTeam = (a, b) => a === b || SAME_TEAM.some(g => g.includes(a) && g.includes(b));
+
+function moveLine(id){
+  const c = CAREERS[id];
+  if(!c || c.length < 2) return '';
+  const cur = c[0], prevT = c[1];
+  if(cur[1] <= prevT[2]) return '';
+  if(sameTeam(cur[0], prevT[0])){
+    return `<p class="movel"><span class="mv-ar">↻</span>같은 팀이 <b>${cur[1]}년</b>부터 ${esc(conKo(prevT[0]))} → <b>${esc(conKo(cur[0]))}</b>로 이름을 바꿨습니다</p>`;
+  }
+  return `<p class="movel"><span class="mv-ar">→</span>${esc(conKo(prevT[0]))}에서 <b>${esc(conKo(cur[0]))}</b>로 <b>${cur[1]}년</b> 이적</p>`;
+}
+
+function contractBlock(id){
+  const k = CONTRACT[id];
+  if(!k) return '';
+  const [st, txt] = k;
+  return `<p class="ctr ${st}"><span class="ct-b">2027 ${ST_KO[st]}</span>${esc(txt)}</p>`;
+}
+
+function renderMarket(){
+  const el = document.getElementById('market');
+  if(!el) return;
+  el.innerHTML = `<div class="mkt">
+    <div class="mkt-hd"><b>2027 시즌 이적 현황</b><span class="mono">${esc(MARKET_2027.asof)}</span></div>
+    <p class="mkt-open">${esc(MARKET_2027.open)}</p>
+    <ul class="mkt-ls">${MARKET_2027.news.map(([h,t]) => `<li><b>${esc(h)}</b><span>${esc(t)}</span></li>`).join('')}</ul>
+  </div>`;
+}
 const $ = s => document.querySelector(s);
 const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const team = id => TEAMS.find(t => t.id === id);
@@ -2344,7 +2483,8 @@ function openDriver(id){
     <div class="kv"><div><span>국적</span><b>${esc(d.nat)}</b></div><div><span>출생</span><b>${esc(d.born)}${age(d.born)?' ('+age(d.born)+')':''}</b></div><div><span>출신</span><b>${esc(d.from)}</b></div><div><span>F1 데뷔</span><b>${esc(d.since)}</b></div>
      <div><span>2026 순위</span><b>${pos}위 · ${st[1]}점</b></div></div>
     <div class="m-sec"><span class="lb">한 줄</span><p style="color:var(--ink);font-weight:500">${esc(d.line)}</p></div>
-    <div class="m-sec"><span class="lb">비화 · 커리어</span><ul>${d.bio.map(b => `<li>${esc(b)}</li>`).join('')}</ul></div>
+    <div class="m-sec"><span class="lb">팀 이력 · 이적</span>${careerBlock(id)}${moveLine(id)}${contractBlock(id)}</div>
+    <div class="m-sec"><span class="lb">비화</span><ul>${d.bio.map(b => `<li>${esc(b)}</li>`).join('')}</ul></div>
     <div class="m-sec"><span class="lb">주행 스타일 · 승부 타입</span>${styleBlock(id)}</div>
     <div class="m-sec"><span class="lb">볼 때 이 사람은</span><p>${esc(d.watch)}</p></div>
     <div class="m-sec"><span class="lb">최근 5시즌 라운드별 결과</span>${histBlock(id)}
@@ -2425,7 +2565,7 @@ document.addEventListener('click', e => {
 });
 $('#dlg').addEventListener('click', e => { if(e.target.id === 'dlg') $('#dlg').close(); });
 
-renderNext(); renderGuide(); renderRaces(); renderDrivers(); renderRules(); afterRules(); renderStand(); renderCal(); renderClassics(); renderCircuits(); renderSim(); renderChartTab(); renderCars(); renderUpnext(); renderCalendar(); renderStyleGroups();
+renderNext(); renderGuide(); renderRaces(); renderDrivers(); renderRules(); afterRules(); renderStand(); renderCal(); renderClassics(); renderCircuits(); renderSim(); renderChartTab(); renderCars(); renderUpnext(); renderCalendar(); renderStyleGroups(); renderMarket();
 setTab(store.get('tab', 'cal'));
 /* ── 자동 갱신 레이어 ──────────────────────────────────────────────
    data/live.json (GitHub Actions가 매일 갱신)을 읽어 숫자 데이터를 덮어쓴다.
@@ -2509,6 +2649,14 @@ function applyLive(L){
       since:String(L.season||''), line:'시즌 중 합류 — 상세 프로필은 아직 없습니다.',
       r:[], bio:[]});
   });
+
+  /* 0-b) 팀 이력 */
+  if(L.careers && typeof CAREERS !== 'undefined'){
+    Object.keys(L.careers).forEach(c => {
+      const v = L.careers[c];
+      if(v && v.t && v.t.length) CAREERS[c] = v.t;
+    });
+  }
 
   /* 1) 순위표 */
   if(L.standings && L.standings.d && L.standings.d.length){
@@ -2653,7 +2801,7 @@ function footLive(){
 function rerenderAll(){
   $('#asof').textContent = ASOF;
   renderNext(); renderGuide(); renderRaces(); renderDrivers(); renderStand();
-  renderCal(); renderChartTab(); renderUpnext(); renderCalendar(); renderStyleGroups();
+  renderCal(); renderChartTab(); renderUpnext(); renderCalendar(); renderStyleGroups(); renderMarket();
   liveChip(); footLive();
 }
 
